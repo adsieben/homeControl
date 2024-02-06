@@ -408,14 +408,14 @@ void dump_buffer(uint8_t *buffer, uint16_t length)
 	fprintf(stderr, "\n");
 }
 
-int printMeasurement( char * filename, char * fs, float * msmnt, int size, int cnt )
+int printMeasurement( char * filename, char * fs, float * msmnt, int size )
 {
     FILE *fptr; 
     fptr = fopen( filename, fs); 
 
     int i=0;
     while( i < size ){
-        fprintf( fptr, "%0.2f ", msmnt[ i++ ] / cnt );      
+        fprintf( fptr, "%0.2f ", msmnt[ i++ ] );      
     } 
     // i=0;
     // while( i < size ) fprintf( stderr, "%0.2f ", msmnt[ i++ ] / cnt );
@@ -424,7 +424,7 @@ int printMeasurement( char * filename, char * fs, float * msmnt, int size, int c
     return i;
 }
 
-int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msmnt, int size, int cnt )
+int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msmnt, int size )
 {
     FILE *fptr; 
     fptr = fopen( filename, fs); 
@@ -433,7 +433,7 @@ int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msm
     // fprintf(fptr, "%d ", tSecOld );
 
     int i=0;
-    while( i < size ) fprintf( fptr, "%0.2f ", msmnt[ i++ ] / cnt );
+    while( i < size ) fprintf( fptr, "%0.2f ", msmnt[ i++ ] );
     fprintf( fptr, "\n" );
     fclose( fptr );
     return i;

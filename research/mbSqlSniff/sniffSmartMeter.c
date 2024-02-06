@@ -202,35 +202,39 @@ int main(int argc, char **argv)
                 if( size > 8 )
                 {   
                     Buffer2Measurement(fMeasurementAct, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );
-                    printMeasurement( FN_ACT_VALUES, "w", fMeasurementAct, 11, 1 );
+                    printMeasurement( FN_ACT_VALUES, "w", fMeasurementAct, PV_VALUENUMBER );
                     if( tSecOld < tNow )
                     {
-                        printTSMeasurement( FN_SEC_AVG_VALUES, "a", tSecOld, fMeasurementAvgSec, 11, iMeasurementCntAvgSec );
-                        fprintf( stderr, "Calling sec2db ts %d \n", tSecOld );
-                        rc = secValues2DB( tSecOld, fMeasurementAvgSec, iMeasurementCntAvgSec, TABLENAME_SECAVG );
+                        for( int i = PV_VALUENUMBER; i > 0; i-- ) 
+                          fMeasurementAvgSec[ i - 1 ] /= iMeasurementCntAvgSec;
+                        printTSMeasurement( FN_SEC_AVG_VALUES, "a", tSecOld, fMeasurementAvgSec, PV_VALUENUMBER );
+                        // fprintf( stderr, "Calling sec2db ts %d \n", tSecOld );
+                        rc = addValues2RingBuffer( tSecOld, fMeasurementAvgSec, PVF_AVGSEC );
                         // if( rc != SQLITE_DONE ){
-                        if( rc != 1 ){
+                        if( rc < 0 ){
                           return(1);
                         }
                         tSecOld = tNow;
-                        clearMeasurement( fMeasurementAvgSec, 11 );
+                        clearMeasurement( fMeasurementAvgSec, PV_VALUENUMBER );
                         iMeasurementCntAvgSec = 0;
                     }
                     addMeasurement( fMeasurementAvgSec, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );
                     iMeasurementCntAvgSec++;
                     if( tNow - tTenSecOld > 9 ) //9 seconds
                     {
-                        printTSMeasurement( FN_TENSEC_AVG_VALUES, "a", tTenSecOld, fMeasurementAvgSec, 11, iMeasurementCntAvgSec );
-                        fprintf( stderr, "Calling tensec2db ts %d \n", tTenSecOld );
-                        rc = secValues2DB( tTenSecOld, fMeasurementAvgTenSec, iMeasurementCntAvgTenSec, TABLENAME_TENSECAVG );
+                        for( int i = PV_VALUENUMBER; i > 0; i-- ) 
+                          fMeasurementAvgTenSec[ i - 1 ] /= iMeasurementCntAvgTenSec;
+                        printTSMeasurement( FN_TENSEC_AVG_VALUES, "a", tTenSecOld, fMeasurementAvgTenSec, PV_VALUENUMBER );
+                        // fprintf( stderr, "Calling tensec2db ts %d \n", tTenSecOld );
+                        rc = addValues2RingBuffer( tTenSecOld, fMeasurementAvgTenSec, PVF_AVGTENSEC );
                         // for( i = 10; i >=0; i-- ) 
                         //   fMeasurementAvgTenSec[ i ] /= iMeasurementCntAvgTenSec;
                         // rc = tensecValues2DB( tTenSecOld, fMeasurementAvgTenSec, iMeasurementCntAvgTenSec );
-                        if( rc != 1 ){
+                        if( rc < 0 ){
                           return(1);
                         }
                         tTenSecOld = tNow;
-                        clearMeasurement( fMeasurementAvgTenSec, 11 );
+                        clearMeasurement( fMeasurementAvgTenSec, PV_VALUENUMBER );
                         iMeasurementCntAvgTenSec = 0;
                     }
                     addMeasurement( fMeasurementAvgTenSec, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );

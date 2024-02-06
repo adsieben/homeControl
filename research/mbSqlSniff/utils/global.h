@@ -25,25 +25,17 @@
   //expands to "./data/values.sqlite" 
   //(https://stackoverflow.com/questions/5256313/c-c-macro-string-concatenation)
 
-#define PV_AVG_RINGBUFFERSIZE 32
-#define INC_AVG_RB_POS( a ) ( ( ++a ) % PV_AVG_RINGBUFFERSIZE )
-
 #define DIE(err) do { perror(err); exit(EXIT_FAILURE); } while (0)
 
 #define PV_VALUENUMBER 11
 #define PVF_AVGSEC 0x01
 #define PVF_AVGTENSEC 0x02
+#define PVF_VALUE 0x04
+#define PVF_FINISHED 0x08
 
-#define THREAD_NUMBER 32
-#define TF_ACTIVE 0x01
-#define TF_FINISHED 0x02
-
-struct powerValue {
-    int ID;
-    int flag;
-    time_t dateTime; //seconds
-    int val[ PV_VALUENUMBER ];
-};
+// #define THREAD_NUMBER 32
+// #define TF_ACTIVE 0x01
+// #define TF_FINISHED 0x02
 
 // struct valus2DBParameter {
 //     int dateTime; 

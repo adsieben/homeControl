@@ -64,8 +64,8 @@ void write_packet_header(FILE *fp, int length);
 FILE *open_logfile(const char *path);
 void signal_handler();
 void dump_buffer(uint8_t *buffer, uint16_t length);
-int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msmnt, int size, int cnt );
-int printMeasurement( char * filename, char * fs, float * msmnt, int size, int cnt );
+int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msmnt, int size );
+int printMeasurement( char * filename, char * fs, float * msmnt, int size );
 
 
 

@@ -8,10 +8,12 @@
 #define TABLENAME_SECAVG "tPvSec"
 #define TABLENAME_TENSECAVG "tPvTenSec"
 
+#define PV_AVG_RINGBUFFERSIZE 32
+#define INC_AVG_RB_POS( a ) ( ( ++a ) % PV_AVG_RINGBUFFERSIZE )
+
 int initDB( char * dbFileName );
 
-//remove asap
-int secValues2DB( int dateTime, float * val, int cnt, char * tableTame );
+int addValues2RingBuffer( int dateTime, float * val, int tableID );
 
 #endif //_HAVE_SNIFF_DB_UTILS_H
 
