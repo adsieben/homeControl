@@ -220,7 +220,7 @@ int main(int argc, char **argv)
                     }
                     addMeasurement( fMeasurementAvgSec, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );
                     iMeasurementCntAvgSec++;
-                    if( tNow - tTenSecOld > 9 ) //9 seconds
+                    if( tNow - tTenSecOld > 9 ) //9 seconds should
                     {
                         for( int i = PV_VALUENUMBER; i > 0; i-- ) 
                           fMeasurementAvgTenSec[ i - 1 ] /= iMeasurementCntAvgTenSec;
