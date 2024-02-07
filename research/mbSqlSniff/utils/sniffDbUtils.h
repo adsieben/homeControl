@@ -24,6 +24,14 @@ int addValues2RingBuffer( int dateTime, float * val, int tableID );
 // delete  from srcDB.tpvsec where srcdb.tpvsec.fdatetime < (select CAST(strftime('%s', 'now', '-24 hour') as INTEGER) as time) ;
 // delete  from srcDB.tpvTensec where srcdb.tpvTensec.fdatetime < (select CAST(strftime('%s', 'now', '-24 hour') as INTEGER) as time) ;
 
+// select min(fDateTime) as time, count( fDateTime ) as cnt 
+//   from srcDB.tpvsec tp 
+//   group by fDateTime/10 
+//   having fdatetime > (select CAST(strftime('%s', 'now', '-24 minute') as INTEGER) as time) 
+//   order by cnt desc;
+
+// PRAGMA srcDB.wal_checkpoint(PASSIVE);
+
 // delete from tpvsec where fdatetime >= ( select min( fdatetime ) from srcDB.tpvsec) ;
 
 //select avg( fDateTime ) as time, avg( fPowerSum ) from tPvTenSec group by fDateTime / 100;
