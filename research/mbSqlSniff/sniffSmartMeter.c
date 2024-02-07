@@ -27,53 +27,14 @@ fourth thread manage them all.
 
 #include <errno.h>
 #include <fcntl.h>
-#include <getopt.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <signal.h>
-#include <stdbool.h>
-#include <termios.h>
 #include <time.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
-#include <modbus/modbus-rtu.h>
-#include <sqlite3.h>
-
-#ifdef __linux__
-#include <sys/ioctl.h>
-#include <linux/serial.h>
-#endif /*__linux__*/
 
 #include "./utils/sniffDbUtils.h"
 #include "./utils/sniffFSUtils.h"
 #include "./utils/global.h"
-
-void dumpBuffer4human(uint16_t *buffer, uint16_t length) 
-{
-	int i;
-	fprintf(stderr, "\tDUMP: ");
-// 	// for (i=0; i < length; i++) {
-// 	for (i=0; i < length / 2 ; i += 1 ) {
-// 		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) ) );
-// 		// fprintf(stderr, " %5.2f", modbus_get_float_abcd( ( buffer + i ) ) );
-// ////		fprintf(stderr, " %5.2f", modbus_get_float_dcba( ( buffer + i ) ) );
-// 		fprintf(stderr, " %04X", buffer[i] );
-// 		// fprintf(stderr, " %5.2f", modbus_get_float_cdab( ( buffer + i ) ) );
-// 	}
-// 	fprintf(stderr, "\n");
-	for (i=0; i < length / 2 - 2; i += 2 ) {
-		// fprintf(stderr, " %5.2f", modbus_get_float_abcd( ( buffer + i ) ) );
-		fprintf(stderr, " %6.2f", modbus_get_float_badc( ( buffer + i ) ) );
-		// fprintf(stderr, " %5.2f", modbus_get_float_cdab( ( buffer + i ) ) );
-		// fprintf(stderr, " %5.2f", modbus_get_float_dcba( ( buffer + i ) ) );
-		// fprintf(stderr, " %04X", buffer[i] );
-	}
-	fprintf(stderr, "\n");
-}
 
 int clearMeasurement( float * msmnt, int size )
 {
@@ -81,35 +42,6 @@ int clearMeasurement( float * msmnt, int size )
     return size++;
 }
 
-int Buffer2Measurement( float * msmnt, int size, uint16_t *buffer, uint16_t length)
-{
-	// fprintf(stderr, "\naddM" );
-    // int cnt = 0;
-    // for(int i = 0 ; i < length - 2; i += 2, cnt++ )
-    for(int i = 0 ; i < length - 2; i += 2 )
-    {
-		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) )/10.0 );
-        // msmnt[ cnt ] +=  modbus_get_float_badc( ( buffer + i ) )/10.0;
-        msmnt[ i/2 ] =  modbus_get_float_badc( ( buffer + i ) )/10.0;
-        // fprintf(stderr, "%d:%5.2f:%5.2f ", cnt, msmnt[ cnt ], modbus_get_float_badc( ( buffer + i ) )/10.0 );
-        // cnt++;
-    }
-	// fprintf(stderr, "\n" );
-    return length;
-}
-
-int addMeasurement( float * msmnt, int size, uint16_t *buffer, uint16_t length)
-{
-    // for(int i = 0 ; i < length - 2; i += 2, cnt++ )
-    for(int i = 0 ; i < length - 2; i += 2 )
-    {
-		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) )/10.0 );
-        msmnt[ i/2 ] +=  modbus_get_float_badc( ( buffer + i ) )/10.0;
-        // fprintf(stderr, "%d:%5.2f:%5.2f ", cnt, msmnt[ cnt ], modbus_get_float_badc( ( buffer + i ) )/10.0 );
-    }
-	// fprintf(stderr, "\n" );
-    return length;
-}
 
 // float avgMeasurement( float * msmnt, int size )
 // {
@@ -137,22 +69,21 @@ int main(int argc, char **argv)
     int iMeasurementCntAvgSec, iMeasurementCntAvgTenSec, iMeasurementCntAvgMin;
     iMeasurementCntAvgSec = iMeasurementCntAvgTenSec = iMeasurementCntAvgMin = 0;
 
-    struct timeval timeout, tvNow;
+    struct timeval timeout;
 	time_t tNow = time(NULL); /*in seconds*/
     time_t tSecOld, tTenSecOld, tMinOld;
     tSecOld = tTenSecOld = tMinOld = tNow;
-    struct tm tmNow = *localtime(&tNow); /*broken down time*/
+//    struct tm tmNow = *localtime(&tNow); /*broken down time*/
     fd_set set;
 
     char *zErrMsg = 0;
-    int rc;
 
     clearMeasurement( fMeasurementAct, 11 );
     clearMeasurement( fMeasurementAvgSec, 11 );
     clearMeasurement( fMeasurementAvgTenSec, 11 );
     clearMeasurement( fMeasurementAvgMin, 11 );
 
-    signal(SIGUSR1, signal_handler);
+    signal(SIGUSR1, signal_handler);//from sniffFSUtils
 
     parse_args(argc, argv, &args);
 
@@ -163,8 +94,8 @@ int main(int argc, char **argv)
 
     configure_serial_port(port, &args);
 
-    rc = initDB( args.dbFileName );
-    if( rc != 1 ){
+    res = initDB( args.dbFileName );
+    if( res != 1 ){
       DIE("open db");
       return(1);
     }
@@ -209,9 +140,8 @@ int main(int argc, char **argv)
                           fMeasurementAvgSec[ i - 1 ] /= iMeasurementCntAvgSec;
                         printTSMeasurement( FN_SEC_AVG_VALUES, "a", tSecOld, fMeasurementAvgSec, PV_VALUENUMBER );
                         // fprintf( stderr, "Calling sec2db ts %d \n", tSecOld );
-                        rc = addValues2RingBuffer( tSecOld, fMeasurementAvgSec, PVF_AVGSEC );
-                        // if( rc != SQLITE_DONE ){
-                        if( rc < 0 ){
+                        res = addValues2RingBuffer( tSecOld, fMeasurementAvgSec, PVF_AVGSEC );
+                        if( res < 0 ){
                           return(1);
                         }
                         tSecOld = tNow;
@@ -226,11 +156,8 @@ int main(int argc, char **argv)
                           fMeasurementAvgTenSec[ i - 1 ] /= iMeasurementCntAvgTenSec;
                         printTSMeasurement( FN_TENSEC_AVG_VALUES, "a", tTenSecOld, fMeasurementAvgTenSec, PV_VALUENUMBER );
                         // fprintf( stderr, "Calling tensec2db ts %d \n", tTenSecOld );
-                        rc = addValues2RingBuffer( tTenSecOld, fMeasurementAvgTenSec, PVF_AVGTENSEC );
-                        // for( i = 10; i >=0; i-- ) 
-                        //   fMeasurementAvgTenSec[ i ] /= iMeasurementCntAvgTenSec;
-                        // rc = tensecValues2DB( tTenSecOld, fMeasurementAvgTenSec, iMeasurementCntAvgTenSec );
-                        if( rc < 0 ){
+                        res = addValues2RingBuffer( tTenSecOld, fMeasurementAvgTenSec, PVF_AVGTENSEC );
+                        if( res < 0 ){
                           return(1);
                         }
                         tTenSecOld = tNow;
@@ -240,19 +167,9 @@ int main(int argc, char **argv)
                     addMeasurement( fMeasurementAvgTenSec, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );
                     iMeasurementCntAvgTenSec++;
                 }
-                // dump_buffer(buffer , size);
-                // dumpBuffer4human(buffer + 3, size - 3);
             }
-            // write_packet_header(log_fp, size);
-
-            // if (fwrite(buffer, 1, size, log_fp) != size)
-            //     DIE("write pcap");
-
-            // fflush(log_fp);
             size = 0;
         }
     }
-
-
     return EXIT_SUCCESS;
 }

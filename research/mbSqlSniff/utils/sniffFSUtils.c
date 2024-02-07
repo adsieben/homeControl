@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+// #include <time.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -17,6 +17,8 @@
 #include <sys/ioctl.h>
 #include <linux/serial.h>
 #endif /*__linux__*/
+
+#include <modbus/modbus-rtu.h>
 
 volatile int rotate_log = 1; 
 
@@ -437,4 +439,57 @@ int printTSMeasurement( char * filename, char * fs, time_t datetime, float * msm
     fprintf( fptr, "\n" );
     fclose( fptr );
     return i;
+}
+
+void dumpBuffer4human(uint16_t *buffer, uint16_t length) 
+{
+	int i;
+	fprintf(stderr, "\tDUMP: ");
+// 	// for (i=0; i < length; i++) {
+// 	for (i=0; i < length / 2 ; i += 1 ) {
+// 		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) ) );
+// 		// fprintf(stderr, " %5.2f", modbus_get_float_abcd( ( buffer + i ) ) );
+// ////		fprintf(stderr, " %5.2f", modbus_get_float_dcba( ( buffer + i ) ) );
+// 		fprintf(stderr, " %04X", buffer[i] );
+// 		// fprintf(stderr, " %5.2f", modbus_get_float_cdab( ( buffer + i ) ) );
+// 	}
+// 	fprintf(stderr, "\n");
+	for (i=0; i < length / 2 - 2; i += 2 ) {
+		// fprintf(stderr, " %5.2f", modbus_get_float_abcd( ( buffer + i ) ) );
+		fprintf(stderr, " %6.2f", modbus_get_float_badc( ( buffer + i ) ) );
+		// fprintf(stderr, " %5.2f", modbus_get_float_cdab( ( buffer + i ) ) );
+		// fprintf(stderr, " %5.2f", modbus_get_float_dcba( ( buffer + i ) ) );
+		// fprintf(stderr, " %04X", buffer[i] );
+	}
+	fprintf(stderr, "\n");
+}
+
+int Buffer2Measurement( float * msmnt, int size, uint16_t *buffer, uint16_t length)
+{
+	// fprintf(stderr, "\naddM" );
+    // int cnt = 0;
+    // for(int i = 0 ; i < length - 2; i += 2, cnt++ )
+    for(int i = 0 ; i < length - 2; i += 2 )
+    {
+		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) )/10.0 );
+        // msmnt[ cnt ] +=  modbus_get_float_badc( ( buffer + i ) )/10.0;
+        msmnt[ i/2 ] =  modbus_get_float_badc( ( buffer + i ) )/10.0;
+        // fprintf(stderr, "%d:%5.2f:%5.2f ", cnt, msmnt[ cnt ], modbus_get_float_badc( ( buffer + i ) )/10.0 );
+        // cnt++;
+    }
+	// fprintf(stderr, "\n" );
+    return length;
+}
+
+int addMeasurement( float * msmnt, int size, uint16_t *buffer, uint16_t length)
+{
+    // for(int i = 0 ; i < length - 2; i += 2, cnt++ )
+    for(int i = 0 ; i < length - 2; i += 2 )
+    {
+		// fprintf(stderr, " %5.2f", modbus_get_float_badc( ( buffer + i ) )/10.0 );
+        msmnt[ i/2 ] +=  modbus_get_float_badc( ( buffer + i ) )/10.0;
+        // fprintf(stderr, "%d:%5.2f:%5.2f ", cnt, msmnt[ cnt ], modbus_get_float_badc( ( buffer + i ) )/10.0 );
+    }
+	// fprintf(stderr, "\n" );
+    return length;
 }

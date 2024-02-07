@@ -125,7 +125,6 @@ int initDB( char * dbFileName ){
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
   int rc = sqlite3_open( dbFileName, &db);
-  // rc = sqlite3_open(DB, &db);
   if( rc ){
     fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
     sqlite3_close(db);
