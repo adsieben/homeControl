@@ -30,3 +30,4 @@ int addValues2RingBuffer( int dateTime, float * val, int tableID );
 
 //PRAGMA schema.journal_mode; 
 //PRAGMA schema.journal_mode=WAL; 
+// git clone --no-checkout git@github.com:adsieben/homeControl.git tmp 
