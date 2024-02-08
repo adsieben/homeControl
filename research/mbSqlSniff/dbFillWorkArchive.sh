@@ -8,6 +8,7 @@ ARCHIVE_DB_FILENAME="data/values.20240127.sqlite"
 #alphabetically sorted list of file names matching the pattern.
 
 sqlite3 $ARCHIVE_DB_FILENAME << \EOF
+PRAGMA busy_timeout = 20000;
 ATTACH DATABASE "data/values.sqlite" AS srcDB;
 insert into tPvSec select * from srcDB.tPvSec where fdatetime > (select max( fdatetime ) from tPvSec );
 insert into tPvTenSec select * from srcDB.tPvTenSec where fdatetime > (select max( fdatetime ) from tPvTenSec );
