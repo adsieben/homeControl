@@ -8,7 +8,9 @@ ARCHIVE_DB_FILENAME="data/values.20240127.sqlite"
 #alphabetically sorted list of file names matching the pattern.
 
 sqlite3 $ARCHIVE_DB_FILENAME << \EOF
+.output /dev/null
 PRAGMA busy_timeout = 20000;
+.output stdout
 ATTACH DATABASE "data/values.sqlite" AS srcDB;
 insert into tPvSec select * from srcDB.tPvSec where fdatetime > (select max( fdatetime ) from tPvSec );
 insert into tPvTenSec select * from srcDB.tPvTenSec where fdatetime > (select max( fdatetime ) from tPvTenSec );
@@ -31,6 +33,7 @@ EOF
 #no pathname expansion when variable in "" 
 # echo "$SQL"
 
+# select min(fDateTime) as time, count( fDateTime ) as cnt from srcDB.tpvsec tp group by fDateTime/10 having fdatetime > (select CAST(strftime('%s', 'now', '-24 minute') as INTEGER) as time) order by cnt desc;
 
 #no pathname expansion when variable in with set -f 
 # set -f
