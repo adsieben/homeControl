@@ -1,6 +1,7 @@
 // void tmp();
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <sqlite3.h>
 #include <pthread.h>
@@ -9,7 +10,7 @@
 #include "sniffDbUtils.h"
 #include "global.h"
 
-pthread_t thread = -1;
+pthread_t thread = -1, db2aThread = -1;
 pthread_attr_t attr;
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -41,6 +42,7 @@ int insertValues2DB( sqlite3_stmt *SqlStmt, int dateTime, float * val );
 int values2DB( int dateTime, float * val );
 // int secValues2DB( int dateTime, float * val, int cnt, char * tableTame );
 // int tensecValues2DB( int dateTime, float * val, int cnt );
+int archiveDB();
 
 int prepSQL( sqlite3 * db, sqlite3_stmt **SqlStmt, char * tableName ){
   //1705769861;235.29;234.31;236.81;263.50;227.84;159.47;1312.22;552.10;488.09;271.92;-306.28
@@ -168,12 +170,26 @@ int finalizeDB( char * dbFileName ){
 int addValues2RingBuffer( int dateTime, float * val, int tableID )
 {
   pvAvgPos = INC_AVG_RB_POS( pvAvgPos ); 
-  BITMASK_SET( pvAvgRingBuffer[ pvAvgPos ].flag, PVF_VALUE );
   pvAvgRingBuffer[ pvAvgPos ].dateTime = dateTime;
   BITMASK_SET( pvAvgRingBuffer[ pvAvgPos ].flag, tableID );
   for( int ii = PV_VALUENUMBER - 1; ii >= 0; ii--)
   {
     pvAvgRingBuffer[ pvAvgPos ].val[ ii ] = val[ ii ];
   }
+  //The last piece after all values are in memory
+  BITMASK_SET( pvAvgRingBuffer[ pvAvgPos ].flag, PVF_VALUE );
   return pvAvgPos;
 };
+
+void * executeDB2Archive( void * par )
+{
+  //  execl("/usr/bin/pstree", "pstree", getppid(), 0); 
+   system( "dbFillWorkArchive.sh" );
+  //  execvp( argv[0], argv );
+}
+
+int archiveDB()
+{
+  pthread_create( &db2aThread, &attr, &executeDB2Archive, NULL );
+  return 1;
+}

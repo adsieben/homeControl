@@ -14,6 +14,7 @@
 int initDB( char * dbFileName );
 
 int addValues2RingBuffer( int dateTime, float * val, int tableID );
+int archiveDB();
 
 #endif //_HAVE_SNIFF_DB_UTILS_H
 

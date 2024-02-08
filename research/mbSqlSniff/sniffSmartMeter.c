@@ -166,6 +166,11 @@ int main(int argc, char **argv)
                     }
                     addMeasurement( fMeasurementAvgTenSec, 11, ( uint16_t* )( buffer + 3 ),( size - 3 )/2 );
                     iMeasurementCntAvgTenSec++;
+                    if( tNow - tMinOld > 59 ) //9 seconds should
+                    {
+                        archiveDB();
+                        tMinOld = tNow;
+                    }
                 }
             }
             size = 0;
