@@ -6,7 +6,7 @@
 #appears, then the word is regarded as a pattern, and replaced with an 
 #alphabetically sorted list of file names matching the pattern.
 
-sqlite3 values.20240127.sqlite << \EOF
+sqlite3 data/values.20240127.sqlite << \EOF
 ATTACH DATABASE "values.sqlite" AS srcDB;
 insert into tPvSec select * from srcDB.tPvSec where fdatetime > (select max( fdatetime ) from tPvSec );
 insert into tPvTenSec select * from srcDB.tPvTenSec where fdatetime > (select max( fdatetime ) from tPvTenSec );
