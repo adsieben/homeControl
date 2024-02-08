@@ -7,7 +7,7 @@
 #alphabetically sorted list of file names matching the pattern.
 
 sqlite3 data/values.20240127.sqlite << \EOF
-ATTACH DATABASE "values.sqlite" AS srcDB;
+ATTACH DATABASE "data/values.sqlite" AS srcDB;
 insert into tPvSec select * from srcDB.tPvSec where fdatetime > (select max( fdatetime ) from tPvSec );
 insert into tPvTenSec select * from srcDB.tPvTenSec where fdatetime > (select max( fdatetime ) from tPvTenSec );
 delete  from srcDB.tpvsec where srcdb.tpvsec.fdatetime < (select CAST(strftime('%s', 'now', '-24 hour') as INTEGER) as time) ;
