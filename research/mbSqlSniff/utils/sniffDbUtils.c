@@ -184,7 +184,7 @@ int addValues2RingBuffer( int dateTime, float * val, int tableID )
 void * executeDB2Archive( void * par )
 {
   //  execl("/usr/bin/pstree", "pstree", getppid(), 0); 
-   system( "dbFillWorkArchive.sh" );
+   system( "./dbFillWorkArchive.sh" );
   //  execvp( argv[0], argv );
 }
 

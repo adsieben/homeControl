@@ -1,5 +1,8 @@
 //ln -s sniffFSUtils.20240204.v.0.1.c sniffFSUtils.c
 
+// while( true );do dc -e "$(date +%s) $(tail -n 1 powerValues.sec.avg | cut -f 1 -d ' ') - p"; date +%s ; sleep 0.9; done
+// dc -e "$(date +%s) $(tail -n 1 powerValues.sec.avg | cut -f 1 -d ' ') - p"
+
 #include "sniffFSUtils.h"
 #include "global.h"
 
